@@ -151,6 +151,36 @@ const getUserById = async (userId) => {
     throw error;
   }
 };
+
+const createTags = async (taglist) => {
+
+  if (tagList.length === 0) { 
+    return; 
+  }
+
+  const insertValues = tagList.map(
+    (_, index) => `$${index + 1}`).join('), (');
+
+  const selectValues = tagList.map(
+    (_, index) => `$${index + 1}`).join(', ');
+
+  try {
+    await client.query(`
+      INSERT INTO tags(name)
+      VALUES (${insertValues})
+      ON CONFLICT(name) DO NOTHING
+    `, taglist)
+
+    const { rows } = client.query(`
+      SELECT * FROM tags
+      WHERE name
+      IN (${selectValues});
+    `, taglist)
+  } catch (error) {
+    throw error
+  }
+}
+
 module.exports = {
     client,
     getAllUsers,
